@@ -7,15 +7,22 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.example.wearabldeviceapp.adapters.HomeAdapter;
 import com.example.wearabldeviceapp.databinding.ActivityParentsFormBinding;
+import com.example.wearabldeviceapp.models.LocalSetting;
 import com.example.wearabldeviceapp.models.Users;
 import com.example.wearabldeviceapp.preference.UserPref;
 import com.google.android.material.navigation.NavigationBarView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ParentMainActivity extends AppCompatActivity {
 
     private ActivityParentsFormBinding binding;
+    HomeAdapter adapter;
 
 
     @Override
@@ -23,7 +30,34 @@ public class ParentMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityParentsFormBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        initializers();
         initListeners();
+    }
+
+    private void initializers() {
+        List<LocalSetting> list = new ArrayList<>();
+        LocalSetting setting = new LocalSetting();
+        setting.setText("Register Device");
+        setting.setImageID(R.drawable.device);
+        list.add(setting);
+        setting = new LocalSetting();
+        setting.setText("Add Dependent");
+        setting.setImageID(R.drawable.dependent);
+        list.add(setting);
+
+        setting = new LocalSetting();
+        setting.setText("Track");
+        setting.setImageID(R.drawable.tracking);
+        list.add(setting);
+
+        setting = new LocalSetting();
+        setting.setText("Zones");
+        setting.setImageID(R.drawable.zone);
+        list.add(setting);
+
+        adapter = new HomeAdapter(ParentMainActivity.this, list);
+        binding.recyler.setLayoutManager(new GridLayoutManager(ParentMainActivity.this, 2));
+        binding.recyler.setAdapter(adapter);
     }
 
     private void initListeners() {

@@ -32,4 +32,10 @@
         <item name="colorPrimary">#FFF27E</item>
         <item name="colorAccent">@color/purple_500</item>
     </style>
+
+    <style name="BebasStyle">
+        <item name="android:fontFamily">@font/bebas</item>
+
+        <item name="android:textSize">20sp</item>
+    </style>
 </resources>

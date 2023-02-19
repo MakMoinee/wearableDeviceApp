@@ -15,7 +15,7 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_person" />
+            android:src="@drawable/profile" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler"
