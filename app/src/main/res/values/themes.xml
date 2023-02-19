@@ -22,4 +22,14 @@
     <style name="Theme.WearablDeviceApp.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.WearablDeviceApp.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="CustomStyle" parent="Theme.Design.Light.NoActionBar">
+        <item name="colorPrimary">#FFF27E</item>
+        <item name="colorAccent">@color/purple_500</item>
+    </style>
+
+    <style name="CustomStyleWithAction" parent="Theme.Design.Light">
+        <item name="colorPrimary">#FFF27E</item>
+        <item name="colorAccent">@color/purple_500</item>
+    </style>
 </resources>

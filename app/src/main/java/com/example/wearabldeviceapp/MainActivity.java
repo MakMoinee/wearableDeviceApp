@@ -1,76 +1,99 @@
 package com.example.wearabldeviceapp;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
+import android.widget.Button;
+import android.widget.Toast;
 
-import com.google.android.material.snackbar.Snackbar;
-
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.view.View;
-
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.example.wearabldeviceapp.databinding.ActivityMainBinding;
-
-import android.view.Menu;
-import android.view.MenuItem;
+import com.example.wearabldeviceapp.auth.LocalAuth;
+import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
+import com.example.wearabldeviceapp.models.Users;
+import com.example.wearabldeviceapp.preference.UserPref;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 public class MainActivity extends AppCompatActivity {
 
-    private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
+    Button btnLogin, btnCreateAccount;
+
+    TextInputLayout layoutPassword;
+    TextInputEditText editEmail, editPass;
+    AlertDialog dialog;
+    ProgressDialog pD;
+    LocalAuth mAuth;
+    Boolean isPassClick = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Users users = new UserPref(MainActivity.this).getUser();
+        if (users != null) {
+            startActivity(new Intent(MainActivity.this, ParentMainActivity.class));
+        }
+        setContentView(R.layout.activity_main);
+        initViews();
+        initListeners();
+    }
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+    private void initListeners() {
+        btnLogin.setOnClickListener(v -> {
+            if (editEmail.getText().toString().equals("") || editPass.getText().toString().equals("")) {
+                Toast.makeText(MainActivity.this, "Please Don't Leave Empty Fields", Toast.LENGTH_SHORT).show();
+            } else {
+                Users users = new Users();
+                users.setEmail(editEmail.getText().toString());
+                users.setPassword(editPass.getText().toString());
+                pD.show();
+                mAuth.login(users, new SimpleRequestListener() {
+                    @Override
+                    public void onSuccessWithUserData(Users users) {
+                        pD.dismiss();
+                        Toast.makeText(MainActivity.this, "Login Successfully", Toast.LENGTH_SHORT).show();
+                        new UserPref(MainActivity.this).storeUser(users);
+                        startActivity(new Intent(MainActivity.this, ParentMainActivity.class));
+                        finish();
+                    }
 
-        setSupportActionBar(binding.toolbar);
-
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                    @Override
+                    public void onError() {
+                        pD.dismiss();
+                        Toast.makeText(MainActivity.this, "Wrong username or password", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+        btnCreateAccount.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, CreateAccountActivity.class));
+        });
+        layoutPassword.setEndIconOnClickListener(v -> {
+            isPassClick = !isPassClick;
+            if (isPassClick) {
+                layoutPassword.setEndIconDrawable(R.drawable.ic_eye_off);
+                editPass.setInputType(InputType.TYPE_CLASS_TEXT);
+                isPassClick = true;
+            } else {
+                layoutPassword.setEndIconDrawable(R.drawable.ic_eye);
+                editPass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                isPassClick = false;
             }
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
+    private void initViews() {
+        btnLogin = findViewById(R.id.btnLogin);
+        editEmail = findViewById(R.id.editEmail);
+        editPass = findViewById(R.id.editPassword);
+        layoutPassword = findViewById(R.id.layoutPass);
+        btnCreateAccount = findViewById(R.id.btnCreateAccount);
+        mAuth = new LocalAuth();
+        pD = new ProgressDialog(MainActivity.this);
+        pD.setMessage("Sending Request ...");
+        pD.setCancelable(false);
     }
 }
