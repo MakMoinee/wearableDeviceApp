@@ -45,6 +45,19 @@
             android:exported="true"
             android:parentActivityName=".ParentMainActivity"
             android:theme="@style/CustomStyleWithAction" />
+        <activity
+            android:name=".RegisterDeviceActivity"
+            android:exported="true"
+            android:parentActivityName=".ParentMainActivity"
+            android:theme="@style/CustomStyleWithAction" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAvWYOcbwWjtKamxaVApC1Pi1HoLu5Ox6Y" />
     </application>
 
 </manifest>

@@ -1,28 +1,37 @@
 package com.example.wearabldeviceapp.interfaces;
 
+import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.Users;
+
+import java.util.List;
 
 public interface SimpleRequestListener {
 
-    default void onSuccess(){
+    default void onSuccess() {
         /**
          * Default implementation
          */
     }
 
-    default void onSuccessWithUserData(Users users){
+    default void onSuccess(List<LocalGPS> gpsList) {
         /**
          * Default implementation
          */
     }
 
-    default void onSuccessWithStr(String uuid){
+    default void onSuccessWithUserData(Users users) {
         /**
          * Default implementation
          */
     }
 
-    default void onError(){
+    default void onSuccessWithStr(String uuid) {
+        /**
+         * Default implementation
+         */
+    }
+
+    default void onError() {
         /**
          * Default implementation
          */

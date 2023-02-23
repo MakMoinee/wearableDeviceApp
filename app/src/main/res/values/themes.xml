@@ -33,6 +33,21 @@
         <item name="colorAccent">@color/purple_500</item>
     </style>
 
+    <style name="CustomStyleYellow" parent="Theme.Design.Light">
+        <item name="colorPrimary">#FFF27E</item>
+        <item name="colorAccent">#FFF27E</item>
+    </style>
+
+    <style name="CustomStyleBlue" parent="Theme.Design.Light">
+        <item name="colorPrimary">#03A9F4</item>
+        <item name="colorAccent">#03A9F4</item>
+    </style>
+
+    <style name="CustomStyleRed" parent="Theme.Design.Light">
+        <item name="colorPrimary">#F44336</item>
+        <item name="colorAccent">#F44336</item>
+    </style>
+
     <style name="BebasStyle">
         <item name="android:fontFamily">@font/bebas</item>
 

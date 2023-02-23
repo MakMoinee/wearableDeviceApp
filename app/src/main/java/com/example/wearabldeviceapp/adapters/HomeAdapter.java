@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.wearabldeviceapp.R;
+import com.example.wearabldeviceapp.interfaces.AdapterListener;
 import com.example.wearabldeviceapp.models.LocalSetting;
 
 import java.util.List;
@@ -19,10 +20,12 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
 
     Context mContext;
     List<LocalSetting> list;
+    AdapterListener listener;
 
-    public HomeAdapter(Context mContext, List<LocalSetting> list) {
+    public HomeAdapter(Context mContext, List<LocalSetting> list, AdapterListener l) {
         this.mContext = mContext;
         this.list = list;
+        this.listener = l;
     }
 
     @NonNull
@@ -37,6 +40,12 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
         LocalSetting setting = list.get(position);
         holder.txtTitle.setText(setting.getText());
         holder.imgLogo.setImageResource(setting.getImageID());
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onItemClickListener(holder.getAdapterPosition());
+            }
+        });
     }
 
     @Override

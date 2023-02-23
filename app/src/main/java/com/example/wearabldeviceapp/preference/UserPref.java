@@ -17,7 +17,7 @@ public class UserPref {
 
     public void storeUser(Users users) {
         SharedPreferences.Editor editor = pref.edit();
-        editor.putString("userID", users.getPassword());
+        editor.putString("userID", users.getUserID());
         editor.putString("name", users.getName());
         editor.putString("email", users.getEmail());
         editor.putString("password", users.getPassword());

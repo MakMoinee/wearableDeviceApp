@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.wearabldeviceapp.adapters.HomeAdapter;
 import com.example.wearabldeviceapp.databinding.ActivityParentsFormBinding;
+import com.example.wearabldeviceapp.interfaces.AdapterListener;
 import com.example.wearabldeviceapp.models.LocalSetting;
 import com.example.wearabldeviceapp.models.Users;
 import com.example.wearabldeviceapp.preference.UserPref;
@@ -55,7 +56,18 @@ public class ParentMainActivity extends AppCompatActivity {
         setting.setImageID(R.drawable.zone);
         list.add(setting);
 
-        adapter = new HomeAdapter(ParentMainActivity.this, list);
+        adapter = new HomeAdapter(ParentMainActivity.this, list, new AdapterListener() {
+            @Override
+            public void onItemClickListener(int position) {
+                switch (position) {
+                    case 0:
+                        startActivity(new Intent(ParentMainActivity.this, RegisterDeviceActivity.class));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
         binding.recyler.setLayoutManager(new GridLayoutManager(ParentMainActivity.this, 2));
         binding.recyler.setAdapter(adapter);
     }

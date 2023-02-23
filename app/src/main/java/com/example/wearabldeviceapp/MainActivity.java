@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -16,6 +17,7 @@ import com.example.wearabldeviceapp.models.Users;
 import com.example.wearabldeviceapp.preference.UserPref;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.gson.Gson;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccessWithUserData(Users users) {
                         pD.dismiss();
                         Toast.makeText(MainActivity.this, "Login Successfully", Toast.LENGTH_SHORT).show();
+                        Log.e("USERS", new Gson().toJson(users));
                         new UserPref(MainActivity.this).storeUser(users);
                         startActivity(new Intent(MainActivity.this, ParentMainActivity.class));
                         finish();
