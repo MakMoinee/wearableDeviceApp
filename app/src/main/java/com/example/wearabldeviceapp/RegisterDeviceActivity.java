@@ -10,8 +10,12 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.wearabldeviceapp.adapters.RegisterDeviceAdapter;
 import com.example.wearabldeviceapp.databinding.ActivityRegisterDeviceBinding;
+import com.example.wearabldeviceapp.interfaces.AdapterListener;
 import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
 import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.Users;
@@ -29,6 +33,7 @@ public class RegisterDeviceActivity extends AppCompatActivity {
     AlertDialog alertDialogAddDevice;
     LocalRequest req;
     ProgressDialog pd;
+    RegisterDeviceAdapter adapter;
 
     LocalFirestore fs;
 
@@ -49,7 +54,39 @@ public class RegisterDeviceActivity extends AppCompatActivity {
                 fs.getAllDevice(users.getUserID(), new SimpleRequestListener() {
                     @Override
                     public void onSuccess(List<LocalGPS> gpsList) {
-                        SimpleRequestListener.super.onSuccess(gpsList);
+                        adapter = new RegisterDeviceAdapter(RegisterDeviceActivity.this, gpsList, new AdapterListener() {
+                            @Override
+                            public void onItemLongClickListener(int position) {
+                                AlertDialog.Builder sBuilder = new AlertDialog.Builder(RegisterDeviceActivity.this);
+                                DialogInterface.OnClickListener dListener = (dialog, which) -> {
+                                    if (which == DialogInterface.BUTTON_NEGATIVE) {
+                                        LocalGPS gps = gpsList.get(position);
+                                        fs.deleteDevice(gps.getDocument(), new SimpleRequestListener() {
+                                            @Override
+                                            public void onSuccess() {
+                                                Toast.makeText(RegisterDeviceActivity.this, "Successfully Deleted Device", Toast.LENGTH_SHORT).show();
+                                                binding.recycler.setAdapter(null);
+                                                loadData();
+                                            }
+
+                                            @Override
+                                            public void onError() {
+                                                Toast.makeText(RegisterDeviceActivity.this, "Failed To Delete Device", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    } else {
+                                        dialog.dismiss();
+                                    }
+                                };
+                                sBuilder.setMessage("Are You Sure You Want To Delete Device?")
+                                        .setNegativeButton("Yes", dListener)
+                                        .setPositiveButton("No", dListener)
+                                        .setCancelable(false)
+                                        .show();
+                            }
+                        });
+                        binding.recycler.setLayoutManager(new LinearLayoutManager(RegisterDeviceActivity.this));
+                        binding.recycler.setAdapter(adapter);
                     }
 
                     @Override
@@ -166,6 +203,8 @@ public class RegisterDeviceActivity extends AppCompatActivity {
                                 pd.dismiss();
                                 alertDialogAddDevice.dismiss();
                                 Toast.makeText(RegisterDeviceActivity.this, "Successfully Added Device", Toast.LENGTH_SHORT).show();
+                                binding.recycler.setAdapter(null);
+                                loadData();
                             }
 
                             @Override

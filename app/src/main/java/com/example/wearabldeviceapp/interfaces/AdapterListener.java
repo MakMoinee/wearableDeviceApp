@@ -7,4 +7,10 @@ public interface AdapterListener {
          * default implementation
          */
     }
+
+    default void onItemLongClickListener(int position) {
+        /**
+         * default implementation
+         */
+    }
 }

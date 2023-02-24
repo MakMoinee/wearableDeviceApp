@@ -72,10 +72,28 @@ public class LocalFirestore {
     public void addDevice(String userID, LocalGPS gps, SimpleRequestListener listener) {
         Map<String, Object> fMap = CommonMaps.getGPSMap(userID, gps);
         db.collection("devices")
-                .document()
-                .set(fMap)
-                .addOnSuccessListener(unused -> listener.onSuccess())
-                .addOnFailureListener(e -> listener.onError());
+                .whereEqualTo("deviceUserID", gps.getUserID())
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (queryDocumentSnapshots.isEmpty()) {
+                            db.collection("devices")
+                                    .document()
+                                    .set(fMap)
+                                    .addOnSuccessListener(unused -> listener.onSuccess())
+                                    .addOnFailureListener(e1 -> listener.onError());
+                        } else {
+                            listener.onError();
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> db.collection("devices")
+                        .document()
+                        .set(fMap)
+                        .addOnSuccessListener(unused -> listener.onSuccess())
+                        .addOnFailureListener(e1 -> listener.onError()));
+
     }
 
     public void getAllDevice(String userID, SimpleRequestListener listener) {
@@ -93,6 +111,7 @@ public class LocalFirestore {
                                 LocalGPS gpss = new LocalGPS();
                                 gpss.setDeviceID(fgps.getDeviceID());
                                 gpss.setUserID(fgps.getDeviceUserID());
+                                gpss.setDocument(documentSnapshot.getId());
                                 gpsList.add(gpss);
                             }
                         }
@@ -105,7 +124,24 @@ public class LocalFirestore {
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("ERROR_GET_DEVICE",e.getMessage());
+                    Log.e("ERROR_GET_DEVICE", e.getMessage());
+                    listener.onError();
+                });
+    }
+
+    public void deleteDevice(String docID, SimpleRequestListener listener) {
+        db.collection("devices")
+                .document(docID)
+                .delete()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        listener.onSuccess();
+                    } else {
+                        listener.onError();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("ERROR_DELETE_DIVICE", e.getMessage());
                     listener.onError();
                 });
     }

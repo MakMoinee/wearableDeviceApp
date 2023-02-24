@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class LocalGPS {
+    String document;
     int UserID;
     int DeviceID;
     boolean isFirst;

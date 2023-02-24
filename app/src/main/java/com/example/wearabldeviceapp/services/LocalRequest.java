@@ -26,6 +26,7 @@ public class LocalRequest {
         gps.setTimeZones("8:00");
         gps.setFirst(false);
         String req = new Gson().toJson(gps);
+        Log.e("DATA", req);
         StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.gpsURL, response -> {
             Log.e("SUCCESS_COORDINATE", response);
             listener.onSuccessWithStr(response);

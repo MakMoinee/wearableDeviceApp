@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,7 +35,17 @@ public class RegisterDeviceAdapter extends RecyclerView.Adapter<RegisterDeviceAd
 
     @Override
     public void onBindViewHolder(@NonNull RegisterDeviceAdapter.ViewHolder holder, int position) {
-
+        LocalGPS gps = gpsList.get(position);
+        holder.txtUserID.setText(Integer.toString(gps.getUserID()));
+        holder.txtDeviceID.setText(Integer.toString(gps.getDeviceID()));
+        holder.itemView.setOnClickListener(v -> listener.onItemClickListener(holder.getAdapterPosition()));
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                listener.onItemLongClickListener(holder.getAdapterPosition());
+                return false;
+            }
+        });
     }
 
     @Override
@@ -43,9 +54,13 @@ public class RegisterDeviceAdapter extends RecyclerView.Adapter<RegisterDeviceAd
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        public TextView txtUserID;
+        public TextView txtDeviceID;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            txtUserID = itemView.findViewById(R.id.txtUserID);
+            txtDeviceID = itemView.findViewById(R.id.txtDeviceID);
         }
     }
 }

@@ -63,6 +63,9 @@ public class ParentMainActivity extends AppCompatActivity {
                     case 0:
                         startActivity(new Intent(ParentMainActivity.this, RegisterDeviceActivity.class));
                         break;
+                    case 2:
+                        startActivity(new Intent(ParentMainActivity.this, TrackActivity.class));
+                        break;
                     default:
                         break;
                 }
