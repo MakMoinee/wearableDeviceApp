@@ -13,7 +13,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/bebas"
-            android:text="Choose Device ID:"
+            android:text="Choose Dependent:"
             android:textColor="@android:color/black"
             android:textSize="20sp" />
 
@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/spinMe"
             android:layout_marginTop="10dp"
-            android:text="Select Device" />
+            android:text="Select Dependent" />
     </RelativeLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

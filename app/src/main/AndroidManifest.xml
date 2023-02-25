@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -56,6 +56,16 @@
             android:exported="true"
             android:parentActivityName=".ParentMainActivity"
             android:theme="@style/Theme.MaterialComponents.Light.NoActionBar" />
+        <activity
+            android:name=".ZoneActivity"
+            android:exported="true"
+            android:parentActivityName=".ParentMainActivity"
+            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar" />
+        <activity
+            android:name=".DependentActivity"
+            android:exported="true"
+            android:parentActivityName=".ParentMainActivity"
+            android:theme="@style/CustomStyleWithAction" />
 
         <meta-data
             android:name="com.google.android.gms.version"

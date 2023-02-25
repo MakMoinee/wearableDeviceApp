@@ -1,5 +1,6 @@
 package com.example.wearabldeviceapp.common;
 
+import com.example.wearabldeviceapp.models.Dependents;
 import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.Users;
 
@@ -21,6 +22,16 @@ public class CommonMaps {
         map.put("userID", userID);
         map.put("deviceUserID", gps.getUserID());
         map.put("deviceID", gps.getDeviceID());
+        return map;
+    }
+
+    public static Map<String, Object> getDependentMap(Dependents dependents) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("userID", dependents.getUserID());
+        map.put("name", dependents.getName());
+        map.put("age", dependents.getAge());
+        map.put("deviceID", dependents.getDeviceID());
+        map.put("deviceUserID", dependents.getDeviceUserID());
         return map;
     }
 }

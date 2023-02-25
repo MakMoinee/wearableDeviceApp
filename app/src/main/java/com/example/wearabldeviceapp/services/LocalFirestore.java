@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.example.wearabldeviceapp.common.CommonMaps;
 import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
+import com.example.wearabldeviceapp.models.Dependents;
 import com.example.wearabldeviceapp.models.FiretoreGPS;
 import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.Users;
@@ -142,6 +143,57 @@ public class LocalFirestore {
                 })
                 .addOnFailureListener(e -> {
                     Log.e("ERROR_DELETE_DIVICE", e.getMessage());
+                    listener.onError();
+                });
+    }
+
+    public void addDependent(Dependents dependents, SimpleRequestListener listener) {
+        Map<String, Object> map = CommonMaps.getDependentMap(dependents);
+        db.collection("dependents")
+                .document()
+                .set(map)
+                .addOnSuccessListener(unused -> listener.onSuccess())
+                .addOnFailureListener(e -> {
+                    if (e != null) {
+                        Log.e("ERROR_ADD_DEPENDENTS", e.getMessage());
+                    }
+                    listener.onError();
+                });
+    }
+
+    public void getAllDependents(String userID, SimpleRequestListener listener) {
+        db.collection("dependents")
+                .whereEqualTo("userID", userID)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        listener.onError();
+                    } else {
+                        List<Dependents> dependentsList = new ArrayList<>();
+                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            Dependents dependents = documentSnapshot.toObject(Dependents.class);
+                            if (dependents != null) {
+                                dependents.setDocID(documentSnapshot.getId());
+                                dependentsList.add(dependents);
+                            }
+
+                        }
+                        listener.onSuccessDependent(dependentsList);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("ERROR_GET_DEPENDENTS", e.getMessage());
+                    listener.onError();
+                });
+    }
+
+    public void deleteDependent(String docID, SimpleRequestListener listener) {
+        db.collection("dependents")
+                .document(docID)
+                .delete()
+                .addOnSuccessListener(unused -> listener.onSuccess())
+                .addOnFailureListener(e -> {
+                    Log.e("FAILED_TO_DELETE", e.getMessage());
                     listener.onError();
                 });
     }

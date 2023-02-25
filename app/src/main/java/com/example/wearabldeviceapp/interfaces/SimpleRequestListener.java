@@ -1,5 +1,6 @@
 package com.example.wearabldeviceapp.interfaces;
 
+import com.example.wearabldeviceapp.models.Dependents;
 import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.Users;
 
@@ -14,6 +15,12 @@ public interface SimpleRequestListener {
     }
 
     default void onSuccess(List<LocalGPS> gpsList) {
+        /**
+         * Default implementation
+         */
+    }
+
+    default void onSuccessDependent(List<Dependents> dependentsList) {
         /**
          * Default implementation
          */
