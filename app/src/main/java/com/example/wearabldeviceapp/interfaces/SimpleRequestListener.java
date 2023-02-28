@@ -1,7 +1,9 @@
 package com.example.wearabldeviceapp.interfaces;
 
+import com.example.wearabldeviceapp.models.DangerZone;
 import com.example.wearabldeviceapp.models.Dependents;
 import com.example.wearabldeviceapp.models.LocalGPS;
+import com.example.wearabldeviceapp.models.SafeZone;
 import com.example.wearabldeviceapp.models.Users;
 
 import java.util.List;
@@ -13,6 +15,18 @@ public interface SimpleRequestListener {
          * Default implementation
          */
     }
+
+    default void onSuccess(DangerZone safeZone) {
+        /**
+         * Default implementation
+         */
+    }
+    default void onSuccess(SafeZone safeZone) {
+        /**
+         * Default implementation
+         */
+    }
+
 
     default void onSuccess(List<LocalGPS> gpsList) {
         /**

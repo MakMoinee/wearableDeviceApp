@@ -60,7 +60,7 @@
             android:name=".ZoneActivity"
             android:exported="true"
             android:parentActivityName=".ParentMainActivity"
-            android:theme="@style/Theme.MaterialComponents.Light.NoActionBar" />
+            android:theme="@style/CustomStyleWithAction"  />
         <activity
             android:name=".DependentActivity"
             android:exported="true"
@@ -74,6 +74,14 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAvWYOcbwWjtKamxaVApC1Pi1HoLu5Ox6Y" />
+        <receiver
+            android:name=".services.NotifReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.TRIGGER_NOTIF" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

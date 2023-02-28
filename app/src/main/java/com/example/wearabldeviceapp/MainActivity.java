@@ -2,6 +2,7 @@ package com.example.wearabldeviceapp;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -15,6 +16,7 @@ import com.example.wearabldeviceapp.auth.LocalAuth;
 import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
 import com.example.wearabldeviceapp.models.Users;
 import com.example.wearabldeviceapp.preference.UserPref;
+import com.example.wearabldeviceapp.services.NotifReceiver;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.gson.Gson;
@@ -41,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initViews();
         initListeners();
+
+        registerReceiver(new NotifReceiver(), new IntentFilter("com.example.TRIGGER_NOTIF"));
     }
 
     private void initListeners() {

@@ -2,14 +2,17 @@ package com.example.wearabldeviceapp.services;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.example.wearabldeviceapp.common.CommonMaps;
 import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
+import com.example.wearabldeviceapp.models.DangerZone;
 import com.example.wearabldeviceapp.models.Dependents;
 import com.example.wearabldeviceapp.models.FiretoreGPS;
 import com.example.wearabldeviceapp.models.LocalGPS;
+import com.example.wearabldeviceapp.models.SafeZone;
 import com.example.wearabldeviceapp.models.Users;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -197,4 +200,108 @@ public class LocalFirestore {
                     listener.onError();
                 });
     }
+
+    public void addSafeZone(SafeZone safeZone, SimpleRequestListener listener) {
+        Map<String, Object> finalMap = CommonMaps.getSafeZoneMap(safeZone);
+        getSafeZones(safeZone.getUserID(), safeZone.getDependentDeviceID(), new SimpleRequestListener() {
+            @Override
+            public void onSuccess(SafeZone safeZone) {
+                listener.onError();
+            }
+
+            @Override
+            public void onError() {
+                db.collection("safeZones")
+                        .document()
+                        .set(finalMap)
+                        .addOnSuccessListener(unused -> listener.onSuccess())
+                        .addOnFailureListener(e -> listener.onError());
+            }
+        });
+
+    }
+
+    public void getSafeZones(String userID, int deviceID, SimpleRequestListener listener) {
+        db.collection("safeZones")
+                .whereEqualTo("userID", userID)
+                .whereEqualTo("dependentDeviceID", deviceID)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        listener.onError();
+                    } else {
+                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            if (documentSnapshot.exists()) {
+                                SafeZone safeZone = documentSnapshot.toObject(SafeZone.class);
+                                safeZone.setDocID(documentSnapshot.getId());
+                                listener.onSuccess(safeZone);
+                                break;
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError());
+    }
+
+    public void deleteSafeZone(String docID, SimpleRequestListener listener) {
+        db.collection("safeZones")
+                .document(docID)
+                .delete()
+                .addOnSuccessListener(unused -> listener.onSuccess())
+                .addOnFailureListener(e -> listener.onError());
+    }
+
+    public void addDangerZone(DangerZone dangerZone, SimpleRequestListener listener) {
+        Map<String, Object> finalMap = CommonMaps.getDangerZoneMap(dangerZone);
+        getDangerZones(dangerZone.getUserID(), dangerZone.getDependentDeviceID(), new SimpleRequestListener() {
+            @Override
+            public void onSuccess(DangerZone safeZone) {
+                listener.onError();
+            }
+
+            @Override
+            public void onError() {
+                db.collection("dangerZones")
+                        .document()
+                        .set(finalMap)
+                        .addOnSuccessListener(unused -> listener.onSuccess())
+                        .addOnFailureListener(e -> listener.onError());
+            }
+        });
+
+    }
+
+    public void getDangerZones(String userID, int deviceID, SimpleRequestListener listener) {
+        db.collection("dangerZones")
+                .whereEqualTo("userID", userID)
+                .whereEqualTo("dependentDeviceID", deviceID)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (queryDocumentSnapshots.isEmpty()) {
+                            listener.onError();
+                        } else {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                                if (documentSnapshot.exists()) {
+                                    DangerZone dangerZone = documentSnapshot.toObject(DangerZone.class);
+                                    dangerZone.setDocID(documentSnapshot.getId());
+                                    listener.onSuccess(dangerZone);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> listener.onError());
+    }
+
+    public void deleteDangerZone(String docID, SimpleRequestListener listener) {
+        db.collection("dangerZones")
+                .document(docID)
+                .delete()
+                .addOnSuccessListener(unused -> listener.onSuccess())
+                .addOnFailureListener(e -> listener.onError());
+    }
+
 }

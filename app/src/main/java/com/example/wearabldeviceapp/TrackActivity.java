@@ -2,9 +2,12 @@ package com.example.wearabldeviceapp;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
@@ -27,13 +30,16 @@ import com.example.wearabldeviceapp.databinding.ActivityTrackBinding;
 import com.example.wearabldeviceapp.databinding.DialogSelectDeviceBinding;
 import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
 import com.example.wearabldeviceapp.models.D;
+import com.example.wearabldeviceapp.models.DangerZone;
 import com.example.wearabldeviceapp.models.Dependents;
 import com.example.wearabldeviceapp.models.Devices;
 import com.example.wearabldeviceapp.models.LocalGPS;
+import com.example.wearabldeviceapp.models.SafeZone;
 import com.example.wearabldeviceapp.models.Users;
 import com.example.wearabldeviceapp.preference.UserPref;
 import com.example.wearabldeviceapp.services.LocalFirestore;
 import com.example.wearabldeviceapp.services.LocalRequest;
+import com.example.wearabldeviceapp.services.NotifReceiver;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -45,12 +51,15 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.maps.android.PolyUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +78,7 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
 
     List<LocalGPS> gpsList = new ArrayList<>();
     List<Dependents> dependentsList = new ArrayList<>();
-
+    Polygon safeZonePolygon = null;
     LocalFirestore fs;
 
     SelectDeviceAdapter adapter;
@@ -88,6 +97,11 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
     Boolean locationPermissionGranted = false;
     Location lastKnownLocation;
     Location currentLocation;
+
+    List<LatLng> safeZoneLatLng = new ArrayList<>();
+    DangerZone selectDangerZone;
+    Polygon dangerZonePolygon;
+    List<LatLng> dangerZoneLatLng = new ArrayList<>();
 
 
     @Override
@@ -110,16 +124,71 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
         // Add a marker in Sydney and move the camera
-//        LatLng sydney = new LatLng(7.91173, 125.09199);
-//        mMap.addMarker(new MarkerOptions()
-//                .position(sydney)
-//                .title("Your Location"));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
 
         loadDevices();
         chooseDevice();
         initListeners();
+
+    }
+
+    private void loadDangerZone() {
+        if (selectedDependent != null) {
+            fs.getDangerZones(selectedDependent.getUserID(), selectedDependent.getDeviceID(), new SimpleRequestListener() {
+                @Override
+                public void onSuccess(DangerZone dangerZone) {
+                    selectDangerZone = dangerZone;
+                    if (dangerZonePolygon != null) dangerZonePolygon.remove();
+                    List<LatLng> list = new Gson().fromJson(selectDangerZone.getLatLngRaw(), new TypeToken<List<LatLng>>() {
+                    }.getType());
+
+                    if (list != null) {
+                        dangerZoneLatLng = list;
+                        PolygonOptions options = new PolygonOptions().addAll(list)
+                                .clickable(true);
+                        dangerZonePolygon = mMap.addPolygon(options);
+                        dangerZonePolygon.setStrokeColor(Color.rgb(200, 0, 0));
+                        dangerZonePolygon.setFillColor(Color.rgb(200, 0, 0));
+                    }
+
+
+                }
+
+                @Override
+                public void onError() {
+                    SimpleRequestListener.super.onError();
+                }
+            });
+        }
+    }
+
+    private void loadSafeZone() {
+        if (selectedDependent != null) {
+            fs.getSafeZones(selectedDependent.getUserID(), selectedDependent.getDeviceID(), new SimpleRequestListener() {
+                @Override
+                public void onSuccess(SafeZone safeZone) {
+                    if (safeZonePolygon != null) safeZonePolygon.remove();
+                    List<LatLng> latLngList = new Gson().fromJson(safeZone.getLatLngRaw(), new TypeToken<List<LatLng>>() {
+                    }.getType());
+
+                    if (latLngList != null) {
+                        safeZoneLatLng = latLngList;
+                        PolygonOptions options = new PolygonOptions().addAll(latLngList)
+                                .clickable(true);
+                        safeZonePolygon = mMap.addPolygon(options);
+                        safeZonePolygon.setStrokeColor(Color.BLACK);
+                        safeZonePolygon.setFillColor(Color.rgb(0, 200, 0));
+                    }
+
+
+                }
+
+                @Override
+                public void onError() {
+                    SimpleRequestListener.super.onError();
+                }
+            });
+        }
     }
 
     private void runMyThread() {
@@ -154,6 +223,26 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
 //                                        .title("Your Location"));
 //                                markerYourLocation.setTag(0);
 //                            }
+                            //show notif
+                            Boolean isAtSafeZone = false;
+                            Boolean isAtDangerZone = false;
+                            if (safeZoneLatLng.size() > 0) {
+                                isAtSafeZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
+                            }
+
+                            if (dangerZoneLatLng.size() > 0) {
+                                isAtDangerZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
+                            }
+
+
+                            if (isAtDangerZone && dangerZoneLatLng.size() > 0) {
+                                showDangerNotif();
+                            } else {
+                                if (!isAtSafeZone && safeZoneLatLng.size() > 0) {
+                                    showNotif();
+                                }
+                            }
+
 
                             LatLng dLocation = new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng());
 
@@ -174,6 +263,18 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
         };
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(helloRunnable, 0, 10, TimeUnit.SECONDS);
+    }
+
+    private void showDangerNotif() {
+        Intent intent = new Intent("com.example.TRIGGER_NOTIF");
+        intent.putExtra("msg", "Dependent is in danger zone. Please act as soon as possible");
+        sendBroadcast(intent);
+    }
+
+    private void showNotif() {
+        Intent intent = new Intent("com.example.TRIGGER_NOTIF");
+        intent.putExtra("msg", "Dependent is not in safe zone. Please act as soon as possible");
+        sendBroadcast(intent);
     }
 
     private BitmapDescriptor BitmapFromVector(Context context, int vectorResId) {
@@ -249,6 +350,9 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
                             SimpleRequestListener.super.onError();
                         }
                     });
+
+                    loadSafeZone();
+                    loadDangerZone();
                 }
             }
         });
@@ -393,7 +497,6 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
     private void chooseDevice() {
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(TrackActivity.this);
         sBinding = DialogSelectDeviceBinding.inflate(getLayoutInflater(), null, false);
-//        View mView = getLayoutInflater().inflate(R.layout.dialog_select_device, null, false);
         View mView = sBinding.getRoot();
         mBuilder.setView(mView);
         sBinding.btnSelectDevice.setEnabled(false);
@@ -440,15 +543,15 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
                 });
         boolean isavailable = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
-        if(isavailable) {
+        if (isavailable) {
 
             Location loc = lm.getLastKnownLocation("gps");
 
-            if(loc != null) {
+            if (loc != null) {
                 double latitude = loc.getLatitude();
                 double longitude = loc.getLongitude();
 
-                Toast.makeText(TrackActivity.this,"Longitude is  "+longitude + "   Latitude is   "+latitude, Toast.LENGTH_LONG).show();
+              //  Toast.makeText(TrackActivity.this, "Longitude is  " + longitude + "   Latitude is   " + latitude, Toast.LENGTH_LONG).show();
 
             }
         }

@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.wearabldeviceapp.ZoneActivity">
+    <item
+        android:id="@+id/action_load_zones"
+        android:orderInCategory="100"
+        android:title="Load Zones"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_clear"
+        android:orderInCategory="100"
+        android:title="Delete Zones"
+        app:showAsAction="never" />
+</menu>
