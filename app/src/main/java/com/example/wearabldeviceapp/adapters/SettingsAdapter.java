@@ -40,12 +40,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
         LocalSetting setting = list.get(position);
         holder.txtText.setText(setting.getText());
         holder.imgLogo.setImageResource(setting.getImageID());
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onItemClickListener(position);
-            }
-        });
+        holder.itemView.setOnClickListener(v -> listener.onItemClickListener(holder.getAdapterPosition()));
     }
 
     @Override

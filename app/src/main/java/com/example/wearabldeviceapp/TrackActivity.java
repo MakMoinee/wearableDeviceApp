@@ -215,6 +215,7 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
                         }.getType());
                         if (devicesList.size() > 0) {
                             deviceLocation = devicesList.get(0);
+                            Log.e("DATE >>>>", deviceLocation.getDeviceUtcDate());
                             fetchLocation();
 //                            if (currentLocation != null) {
 //                                LatLng sydney = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
@@ -551,7 +552,7 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
                 double latitude = loc.getLatitude();
                 double longitude = loc.getLongitude();
 
-              //  Toast.makeText(TrackActivity.this, "Longitude is  " + longitude + "   Latitude is   " + latitude, Toast.LENGTH_LONG).show();
+                //  Toast.makeText(TrackActivity.this, "Longitude is  " + longitude + "   Latitude is   " + latitude, Toast.LENGTH_LONG).show();
 
             }
         }

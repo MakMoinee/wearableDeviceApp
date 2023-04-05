@@ -3,6 +3,7 @@ package com.example.wearabldeviceapp;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.webkit.WebSettings;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.wearabldeviceapp.adapters.SettingsAdapter;
 import com.example.wearabldeviceapp.databinding.ActivitySettingsBinding;
+import com.example.wearabldeviceapp.databinding.DialogTermsConditionBinding;
 import com.example.wearabldeviceapp.interfaces.AdapterListener;
 import com.example.wearabldeviceapp.models.LocalSetting;
 import com.example.wearabldeviceapp.models.Users;
@@ -24,8 +26,10 @@ import java.util.List;
 public class SettingsActivity extends AppCompatActivity {
 
     ActivitySettingsBinding binding;
+    DialogTermsConditionBinding termsConditionBinding;
     List<LocalSetting> settingsList;
     SettingsAdapter adapter;
+    AlertDialog tcDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,14 +48,31 @@ public class SettingsActivity extends AppCompatActivity {
         setTitle("Settings");
         settingsList = new ArrayList<>();
         LocalSetting setting = new LocalSetting();
+        setting.setImageID(R.drawable.ic_terms);
+        setting.setText("Terms and Conditions");
+        settingsList.add(setting);
+
+        setting = new LocalSetting();
         setting.setImageID(R.drawable.ic_out);
         setting.setText("Log Out");
         settingsList.add(setting);
+
+
         adapter = new SettingsAdapter(SettingsActivity.this, settingsList, new AdapterListener() {
             @Override
             public void onItemClickListener(int position) {
                 LocalSetting s = settingsList.get(position);
                 switch (s.getText()) {
+                    case "Terms and Conditions":
+                        termsConditionBinding = DialogTermsConditionBinding.inflate(getLayoutInflater(), null, false);
+                        AlertDialog.Builder tBuilder = new AlertDialog.Builder(SettingsActivity.this);
+                        tBuilder.setView(termsConditionBinding.getRoot());
+                        WebSettings ws = termsConditionBinding.webView.getSettings();
+                        ws.setJavaScriptEnabled(true);
+                        termsConditionBinding.webView.loadUrl("https://www.app-privacy-policy.com/live.php?token=u6ypb2RuTNjEzNQzz2j26U5QtEbXgdi4");
+                        tcDialog = tBuilder.create();
+                        tcDialog.show();
+                        break;
                     case "Log Out":
                         AlertDialog.Builder mBuilder = new AlertDialog.Builder(SettingsActivity.this);
                         DialogInterface.OnClickListener dListener = (dialog, which) -> {

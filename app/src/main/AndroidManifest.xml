@@ -60,9 +60,14 @@
             android:name=".ZoneActivity"
             android:exported="true"
             android:parentActivityName=".ParentMainActivity"
-            android:theme="@style/CustomStyleWithAction"  />
+            android:theme="@style/CustomStyleWithAction" />
         <activity
             android:name=".DependentActivity"
+            android:exported="true"
+            android:parentActivityName=".ParentMainActivity"
+            android:theme="@style/CustomStyleWithAction" />
+        <activity
+            android:name=".HistoryActivity"
             android:exported="true"
             android:parentActivityName=".ParentMainActivity"
             android:theme="@style/CustomStyleWithAction" />
@@ -74,6 +79,7 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAvWYOcbwWjtKamxaVApC1Pi1HoLu5Ox6Y" />
+
         <receiver
             android:name=".services.NotifReceiver"
             android:exported="true">

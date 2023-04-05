@@ -56,6 +56,11 @@ public class ParentMainActivity extends AppCompatActivity {
         setting.setImageID(R.drawable.zone);
         list.add(setting);
 
+        setting = new LocalSetting();
+        setting.setText("History");
+        setting.setImageID(R.drawable.history);
+        list.add(setting);
+
         adapter = new HomeAdapter(ParentMainActivity.this, list, new AdapterListener() {
             @Override
             public void onItemClickListener(int position) {
@@ -72,6 +77,9 @@ public class ParentMainActivity extends AppCompatActivity {
                     case 3:
                         startActivity(new Intent(ParentMainActivity.this, ZoneActivity.class));
                         break;
+                    case 4:
+                        startActivity(new Intent(ParentMainActivity.this, HistoryActivity.class));
+                        break;
                     default:
                         break;
                 }
@@ -82,18 +90,15 @@ public class ParentMainActivity extends AppCompatActivity {
     }
 
     private void initListeners() {
-        binding.bottomNav.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.nav_settings:
-                        startActivity(new Intent(ParentMainActivity.this, SettingsActivity.class));
-                        break;
-                    case R.id.nav_home:
-                        break;
-                }
-                return false;
+        binding.bottomNav.setOnItemSelectedListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.nav_settings:
+                    startActivity(new Intent(ParentMainActivity.this, SettingsActivity.class));
+                    break;
+                case R.id.nav_home:
+                    break;
             }
+            return false;
         });
     }
 

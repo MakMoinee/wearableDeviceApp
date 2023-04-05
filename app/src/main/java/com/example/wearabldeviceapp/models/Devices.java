@@ -7,4 +7,5 @@ public class Devices {
     int id;
     float baiduLat;
     float baiduLng;
+    String deviceUtcDate;
 }

@@ -36,6 +36,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.24'
     implementation 'com.google.android.libraries.places:places:3.0.0'
     implementation 'com.google.maps.android:android-maps-utils:2.3.0'
+    implementation "androidx.work:work-runtime:2.8.0"
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     testCompileOnly 'org.projectlombok:lombok:1.18.24'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
