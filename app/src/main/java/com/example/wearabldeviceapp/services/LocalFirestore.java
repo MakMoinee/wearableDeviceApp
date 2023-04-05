@@ -11,6 +11,7 @@ import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
 import com.example.wearabldeviceapp.models.DangerZone;
 import com.example.wearabldeviceapp.models.Dependents;
 import com.example.wearabldeviceapp.models.FiretoreGPS;
+import com.example.wearabldeviceapp.models.History;
 import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.SafeZone;
 import com.example.wearabldeviceapp.models.Users;
@@ -23,6 +24,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -303,5 +305,23 @@ public class LocalFirestore {
                 .addOnSuccessListener(unused -> listener.onSuccess())
                 .addOnFailureListener(e -> listener.onError());
     }
+
+
+    public void addHistoryLogger(History history, SimpleRequestListener listener){
+        Map<String, Object> params = new HashMap<>();
+        params.put("dependentName",history.getDependentName());
+        params.put("zoneType",history.getZoneType());
+        params.put("timestamp",history.getTimestamp());
+
+        db.collection("history")
+                .document()
+                .set(params)
+                .addOnSuccessListener(unused -> listener.onSuccess())
+                .addOnFailureListener(e -> {
+                    Log.e("ERROR_ADD_HISTORY",e.getMessage());
+                    listener.onError();
+                });
+    }
+
 
 }
