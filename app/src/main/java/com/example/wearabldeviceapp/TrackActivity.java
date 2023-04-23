@@ -192,31 +192,29 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
     }
 
     private void runMyThread() {
-        Runnable helloRunnable = new Runnable() {
-            public void run() {
-                req.getCoordinates(selectedDevice, new SimpleRequestListener() {
-                    @Override
-                    public void onSuccessWithStr(String uuid) {
-                        uuid = uuid.replace("\"{", "{\"");
-                        uuid = uuid.replace("}\"", "}");
-                        uuid = uuid.replace(":[", "\":\"[");
-                        uuid = uuid.replace("}]", "}]\"");
-                        Log.e("RAW", uuid);
-                        D coordinates = new Gson().fromJson(uuid, new TypeToken<D>() {
-                        }.getType());
-                        String data = coordinates.getD().getDevices();
-                        data = data.replace("[{id", "[{\"id\"");
-                        data = data.replace(":\"", "\":\"");
-                        data = data.replace(",", ",\"");
-                        data = data.replace("groupID:", "groupID\":");
-                        data = data.replace("stopTimeMinute:", "stopTimeMinute\":");
-                        data = data.replace("isStop:", "isStop\":");
-                        List<Devices> devicesList = new Gson().fromJson(data, new TypeToken<List<Devices>>() {
-                        }.getType());
-                        if (devicesList.size() > 0) {
-                            deviceLocation = devicesList.get(0);
-                            Log.e("DATE >>>>", deviceLocation.getDeviceUtcDate());
-                            fetchLocation();
+        Runnable helloRunnable = () -> req.getCoordinates(selectedDevice, new SimpleRequestListener() {
+            @Override
+            public void onSuccessWithStr(String uuid) {
+                uuid = uuid.replace("\"{", "{\"");
+                uuid = uuid.replace("}\"", "}");
+                uuid = uuid.replace(":[", "\":\"[");
+                uuid = uuid.replace("}]", "}]\"");
+                Log.e("RAW", uuid);
+                D coordinates = new Gson().fromJson(uuid, new TypeToken<D>() {
+                }.getType());
+                String data = coordinates.getD().getDevices();
+                data = data.replace("[{id", "[{\"id\"");
+                data = data.replace(":\"", "\":\"");
+                data = data.replace(",", ",\"");
+                data = data.replace("groupID:", "groupID\":");
+                data = data.replace("stopTimeMinute:", "stopTimeMinute\":");
+                data = data.replace("isStop:", "isStop\":");
+                List<Devices> devicesList = new Gson().fromJson(data, new TypeToken<List<Devices>>() {
+                }.getType());
+                if (devicesList.size() > 0) {
+                    deviceLocation = devicesList.get(0);
+                    Log.e("DATE >>>>", deviceLocation.getDeviceUtcDate());
+                    fetchLocation();
 //                            if (currentLocation != null) {
 //                                LatLng sydney = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
 //                                markerYourLocation = mMap.addMarker(new MarkerOptions()
@@ -224,44 +222,42 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
 //                                        .title("Your Location"));
 //                                markerYourLocation.setTag(0);
 //                            }
-                            //show notif
-                            Boolean isAtSafeZone = false;
-                            Boolean isAtDangerZone = false;
-                            if (safeZoneLatLng.size() > 0) {
-                                isAtSafeZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
-                            }
+                    //show notif
+                    Boolean isAtSafeZone = false;
+                    Boolean isAtDangerZone = false;
+                    if (safeZoneLatLng.size() > 0) {
+                        isAtSafeZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
+                    }
 
-                            if (dangerZoneLatLng.size() > 0) {
-                                isAtDangerZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
-                            }
-
-
-                            if (isAtDangerZone && dangerZoneLatLng.size() > 0) {
-                                showDangerNotif();
-                            } else {
-                                if (!isAtSafeZone && safeZoneLatLng.size() > 0) {
-                                    showNotif();
-                                }
-                            }
+                    if (dangerZoneLatLng.size() > 0) {
+                        isAtDangerZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
+                    }
 
 
-                            LatLng dLocation = new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng());
-
-                            markerDeviceLocation = mMap.addMarker(new MarkerOptions()
-                                    .position(dLocation)
-                                    .title(String.format("%s Location", selectedDependent.getName())));
-                            markerDeviceLocation.setTag(0);
-//                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(dLocation, 15));
+                    if (isAtDangerZone && dangerZoneLatLng.size() > 0) {
+                        showDangerNotif();
+                    } else {
+                        if (!isAtSafeZone && safeZoneLatLng.size() > 0) {
+                            showNotif();
                         }
                     }
 
-                    @Override
-                    public void onError() {
-                        SimpleRequestListener.super.onError();
-                    }
-                });
+
+                    LatLng dLocation = new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng());
+
+                    markerDeviceLocation = mMap.addMarker(new MarkerOptions()
+                            .position(dLocation)
+                            .title(String.format("%s Location", selectedDependent.getName())));
+                    markerDeviceLocation.setTag(0);
+//                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(dLocation, 15));
+                }
             }
-        };
+
+            @Override
+            public void onError() {
+                SimpleRequestListener.super.onError();
+            }
+        });
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(helloRunnable, 0, 10, TimeUnit.SECONDS);
     }
@@ -301,60 +297,57 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
     }
 
     private void initListeners() {
-        sBinding.btnSelectDevice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                alertChoose.dismiss();
-                if (selectedDependent != null) {
-                    selectedDevice = new LocalGPS();
-                    selectedDevice.setDeviceID(selectedDependent.getDeviceID());
-                    selectedDevice.setUserID(selectedDependent.getDeviceUserID());
-                    req.getCoordinates(selectedDevice, new SimpleRequestListener() {
-                        @Override
-                        public void onSuccessWithStr(String uuid) {
-                            uuid = uuid.replace("\"{", "{\"");
-                            uuid = uuid.replace("}\"", "}");
-                            uuid = uuid.replace(":[", "\":\"[");
-                            uuid = uuid.replace("}]", "}]\"");
-                            Log.e("RAW", uuid);
-                            D coordinates = new Gson().fromJson(uuid, new TypeToken<D>() {
-                            }.getType());
-                            String data = coordinates.getD().getDevices();
-                            data = data.replace("[{id", "[{\"id\"");
-                            data = data.replace(":\"", "\":\"");
-                            data = data.replace(",", ",\"");
-                            data = data.replace("groupID:", "groupID\":");
-                            data = data.replace("stopTimeMinute:", "stopTimeMinute\":");
-                            data = data.replace("isStop:", "isStop\":");
-                            List<Devices> devicesList = new Gson().fromJson(data, new TypeToken<List<Devices>>() {
-                            }.getType());
-                            if (devicesList.size() > 0) {
-                                deviceLocation = devicesList.get(0);
-                                fetchLocation();
+        sBinding.btnSelectDevice.setOnClickListener(v -> {
+            alertChoose.dismiss();
+            if (selectedDependent != null) {
+                selectedDevice = new LocalGPS();
+                selectedDevice.setDeviceID(selectedDependent.getDeviceID());
+                selectedDevice.setUserID(selectedDependent.getDeviceUserID());
+                req.getCoordinates(selectedDevice, new SimpleRequestListener() {
+                    @Override
+                    public void onSuccessWithStr(String uuid) {
+                        uuid = uuid.replace("\"{", "{\"");
+                        uuid = uuid.replace("}\"", "}");
+                        uuid = uuid.replace(":[", "\":\"[");
+                        uuid = uuid.replace("}]", "}]\"");
+                        Log.e("RAW", uuid);
+                        D coordinates = new Gson().fromJson(uuid, new TypeToken<D>() {
+                        }.getType());
+                        String data = coordinates.getD().getDevices();
+                        data = data.replace("[{id", "[{\"id\"");
+                        data = data.replace(":\"", "\":\"");
+                        data = data.replace(",", ",\"");
+                        data = data.replace("groupID:", "groupID\":");
+                        data = data.replace("stopTimeMinute:", "stopTimeMinute\":");
+                        data = data.replace("isStop:", "isStop\":");
+                        List<Devices> devicesList = new Gson().fromJson(data, new TypeToken<List<Devices>>() {
+                        }.getType());
+                        if (devicesList.size() > 0) {
+                            deviceLocation = devicesList.get(0);
+                            fetchLocation();
 //                                LatLng sydney = new LatLng(7.91173, 125.09199);
-                                LatLng dLocation = new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng());
+                            LatLng dLocation = new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng());
 //                                markerYourLocation = mMap.addMarker(new MarkerOptions()
 //                                        .position(sydney)
 //                                        .title("Your Location"));
 //                                markerYourLocation.setTag(0);
-                                markerDeviceLocation = mMap.addMarker(new MarkerOptions()
-                                        .position(dLocation)
-                                        .title(String.format("%s Location", selectedDependent.getName())));
-                                markerDeviceLocation.setTag(0);
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(dLocation, 15));
-                                runMyThread();
-                            }
+                            markerDeviceLocation = mMap.addMarker(new MarkerOptions()
+                                    .position(dLocation)
+                                    .title(String.format("%s Location", selectedDependent.getName())));
+                            markerDeviceLocation.setTag(0);
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(dLocation, 15));
+                            runMyThread();
                         }
+                    }
 
-                        @Override
-                        public void onError() {
-                            SimpleRequestListener.super.onError();
-                        }
-                    });
+                    @Override
+                    public void onError() {
+                        SimpleRequestListener.super.onError();
+                    }
+                });
 
-                    loadSafeZone();
-                    loadDangerZone();
-                }
+                loadSafeZone();
+                loadDangerZone();
             }
         });
     }

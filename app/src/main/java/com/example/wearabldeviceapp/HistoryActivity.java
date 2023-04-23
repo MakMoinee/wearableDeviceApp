@@ -5,11 +5,14 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.wearabldeviceapp.adapters.HistoryAdapter;
 import com.example.wearabldeviceapp.databinding.ActivityHistoryBinding;
 
 public class HistoryActivity extends AppCompatActivity {
 
     ActivityHistoryBinding binding;
+
+    HistoryAdapter adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -17,5 +20,10 @@ public class HistoryActivity extends AppCompatActivity {
         setTitle("History");
         binding = ActivityHistoryBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        loadValues();
+    }
+
+    private void loadValues() {
+
     }
 }
