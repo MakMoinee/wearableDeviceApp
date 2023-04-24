@@ -28,6 +28,8 @@ public class NotifReceiver extends BroadcastReceiver {
 
         String msg = intent.getStringExtra("msg");
         Intent notifyIntent = new Intent(context, TrackActivity.class);
+        notifyIntent.putExtra("clearSafeZoneNotif", true);
+        notifyIntent.putExtra("clearDangerZoneNotif", true);
         // Set the Activity to start in a new, empty task
         notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // Create the PendingIntent

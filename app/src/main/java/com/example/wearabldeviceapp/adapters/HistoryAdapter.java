@@ -13,6 +13,7 @@ import com.example.wearabldeviceapp.R;
 import com.example.wearabldeviceapp.interfaces.AdapterListener;
 import com.example.wearabldeviceapp.models.History;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
@@ -36,7 +37,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull HistoryAdapter.ViewHolder holder, int position) {
+        History history = historyList.get(position);
+        holder.txtName.setText(history.getDependentName());
+        holder.txtLatitude.setText(String.format("Latitude: %s", history.getLatitude()));
+        holder.txtLongitude.setText(String.format("Longitude: %s", history.getLongitude()));
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
 
+        holder.txtDateTime.setText(String.format("Date and Time: %s", dateFormat.format(history.getTimestamp().toDate())));
     }
 
     @Override
@@ -45,12 +52,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtName, txtDateTime;
+        TextView txtName, txtDateTime, txtLatitude, txtLongitude;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             txtName = itemView.findViewById(R.id.txtName);
             txtDateTime = itemView.findViewById(R.id.txtDateTime);
+            txtLatitude = itemView.findViewById(R.id.txtLatitude);
+            txtLongitude = itemView.findViewById(R.id.txtLongitude);
         }
     }
 }

@@ -12,6 +12,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.wearabldeviceapp.common.Constants;
 import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
+import com.example.wearabldeviceapp.models.History;
 import com.example.wearabldeviceapp.models.LocalGPS;
 import com.google.gson.Gson;
 

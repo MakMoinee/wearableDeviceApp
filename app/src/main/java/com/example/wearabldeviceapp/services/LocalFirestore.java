@@ -2,7 +2,6 @@ package com.example.wearabldeviceapp.services;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -15,12 +14,11 @@ import com.example.wearabldeviceapp.models.History;
 import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.SafeZone;
 import com.example.wearabldeviceapp.models.Users;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -32,6 +30,7 @@ public class LocalFirestore {
 
     Context mContext;
     FirebaseFirestore db;
+    int successCount = 0;
 
     public LocalFirestore(Context mContext) {
         this.mContext = mContext;
@@ -307,20 +306,78 @@ public class LocalFirestore {
     }
 
 
-    public void addHistoryLogger(History history, SimpleRequestListener listener){
+    public void addHistoryLogger(History history, SimpleRequestListener listener) {
         Map<String, Object> params = new HashMap<>();
-        params.put("dependentName",history.getDependentName());
-        params.put("zoneType",history.getZoneType());
-        params.put("timestamp",history.getTimestamp());
+        params.put("dependentName", history.getDependentName());
+        params.put("zoneType", history.getZoneType());
+        params.put("timestamp", history.getTimestamp());
+        params.put("latitude", history.getLatitude());
+        params.put("longitude", history.getLongitude());
+        params.put("userID", history.getUserID());
 
         db.collection("history")
                 .document()
                 .set(params)
                 .addOnSuccessListener(unused -> listener.onSuccess())
                 .addOnFailureListener(e -> {
-                    Log.e("ERROR_ADD_HISTORY",e.getMessage());
+                    Log.e("ERROR_ADD_HISTORY", e.getMessage());
                     listener.onError();
                 });
+    }
+
+    public void getAllHistory(String userID, SimpleRequestListener listener) {
+        db.collection("history")
+                .whereEqualTo("userID", userID)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        listener.onError();
+                    } else {
+                        List<History> historyList = new ArrayList<>();
+                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            if (documentSnapshot.exists()) {
+                                History history = documentSnapshot.toObject(History.class);
+                                if (history != null) {
+                                    history.setDocID(documentSnapshot.getId());
+                                    historyList.add(history);
+                                }
+                            }
+                        }
+                        if (historyList.size() > 0) {
+                            listener.onSuccessHistory(historyList);
+                        } else {
+                            listener.onError();
+                        }
+                    }
+
+                })
+                .addOnFailureListener(e -> listener.onError());
+    }
+
+    public void deleteHistory(String userID, SimpleRequestListener listener) {
+        successCount = 0;
+        this.getAllHistory(userID, new SimpleRequestListener() {
+            @Override
+            public void onSuccessHistory(List<History> historyList) {
+                for (History history : historyList) {
+                    db.collection("history").document(history.getDocID()).delete()
+                            .addOnSuccessListener(unused -> {
+                                successCount++;
+                                if (successCount == historyList.size()) {
+                                    listener.onSuccess();
+                                }
+                            })
+                            .addOnFailureListener(e -> listener.onError());
+                }
+
+
+            }
+
+            @Override
+            public void onError() {
+                SimpleRequestListener.super.onError();
+            }
+        });
     }
 
 

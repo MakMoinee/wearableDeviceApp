@@ -2,6 +2,7 @@ package com.example.wearabldeviceapp.interfaces;
 
 import com.example.wearabldeviceapp.models.DangerZone;
 import com.example.wearabldeviceapp.models.Dependents;
+import com.example.wearabldeviceapp.models.History;
 import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.SafeZone;
 import com.example.wearabldeviceapp.models.Users;
@@ -21,6 +22,7 @@ public interface SimpleRequestListener {
          * Default implementation
          */
     }
+
     default void onSuccess(SafeZone safeZone) {
         /**
          * Default implementation
@@ -50,6 +52,10 @@ public interface SimpleRequestListener {
         /**
          * Default implementation
          */
+    }
+
+    default void onSuccessHistory(List<History> historyList) {
+
     }
 
     default void onError() {

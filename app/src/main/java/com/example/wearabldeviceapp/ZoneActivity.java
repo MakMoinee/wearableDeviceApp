@@ -107,6 +107,12 @@ public class ZoneActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void setListeners() {
+        binding.btnDrawPolygon.setEnabled(false);
+        binding.cbFillSafeZone.setChecked(false);
+        binding.cbFillDangerZone.setChecked(false);
+        binding.cbFillSafeZone.setEnabled(false);
+        binding.cbFillDangerZone.setEnabled(false);
+
         binding.cbFillSafeZone.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 if (localPolygon == null) return;
@@ -149,6 +155,7 @@ public class ZoneActivity extends AppCompatActivity implements OnMapReadyCallbac
             binding.cbFillSafeZone.setChecked(false);
             binding.cbFillDangerZone.setChecked(false);
             binding.cbFillSafeZone.setEnabled(false);
+            binding.btnDrawPolygon.setEnabled(false);
             binding.cbFillDangerZone.setEnabled(false);
             if (safeZonePolygon != null) safeZonePolygon.remove();
             if (dangerZonePolygon != null) dangerZonePolygon.remove();
@@ -198,7 +205,7 @@ public class ZoneActivity extends AppCompatActivity implements OnMapReadyCallbac
                         break;
                 }
             };
-            mBuilder.setMessage("Are You Sure You Want To Save This Selected Zone as Safe Zone?")
+            mBuilder.setMessage("Are You Sure You Want To Save This Selected Zone as Danger Zone?")
                     .setNegativeButton("Yes", dListener)
                     .setPositiveButton("No", dListener)
                     .setCancelable(false)
@@ -307,13 +314,15 @@ public class ZoneActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .add(new LatLng(7.91173, 125.09199)));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(7.91173, 125.09199), 15));
         mMap.setOnMapClickListener(latLng -> {
-            if (localPolygon == null) {
-                binding.cbFillSafeZone.setEnabled(false);
-                binding.cbFillDangerZone.setEnabled(false);
-            } else {
-                binding.cbFillSafeZone.setEnabled(true);
-                binding.cbFillDangerZone.setEnabled(true);
-            }
+            binding.btnDrawPolygon.setEnabled(true);
+//            if (localPolygon == null) {
+//                binding.cbFillSafeZone.setEnabled(false);
+//                binding.cbFillDangerZone.setEnabled(false);
+//            } else {
+//                binding.cbFillSafeZone.setEnabled(true);
+//                binding.cbFillDangerZone.setEnabled(true);
+//
+//            }
             MarkerOptions options = new MarkerOptions().position(latLng);
             Marker lMarker = mMap.addMarker(options);
             latLngList.add(latLng);
@@ -344,6 +353,7 @@ public class ZoneActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
                 selectDependentBinding.btnSelectDevice.setOnClickListener(v -> {
                     if (selectedDependents != null) {
+                        binding.btnClear.performClick();
                         loadSafeZone();
                         loadDangerZone();
                         alertLoadZones.dismiss();
@@ -376,7 +386,6 @@ public class ZoneActivity extends AppCompatActivity implements OnMapReadyCallbac
                                                     dangerZonePolygon.remove();
                                                 if (dangerZoneLatLng.size() > 0)
                                                     dangerZoneLatLng.clear();
-                                                alertClearZones.dismiss();
                                             }
 
                                             @Override

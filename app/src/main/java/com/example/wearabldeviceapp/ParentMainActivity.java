@@ -15,6 +15,7 @@ import com.example.wearabldeviceapp.interfaces.AdapterListener;
 import com.example.wearabldeviceapp.models.LocalSetting;
 import com.example.wearabldeviceapp.models.Users;
 import com.example.wearabldeviceapp.preference.UserPref;
+import com.example.wearabldeviceapp.services.HistoryWorkerManager;
 import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class ParentMainActivity extends AppCompatActivity {
 
     private ActivityParentsFormBinding binding;
     HomeAdapter adapter;
+    HistoryWorkerManager historyWorkerManager;
 
 
     @Override
@@ -87,6 +89,9 @@ public class ParentMainActivity extends AppCompatActivity {
         });
         binding.recyler.setLayoutManager(new GridLayoutManager(ParentMainActivity.this, 2));
         binding.recyler.setAdapter(adapter);
+
+        historyWorkerManager = new HistoryWorkerManager(getApplicationContext());
+        historyWorkerManager.runHistoryWorker();
     }
 
     private void initListeners() {

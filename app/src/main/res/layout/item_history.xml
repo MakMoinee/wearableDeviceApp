@@ -57,6 +57,30 @@
                 android:text="Date and time:"
                 android:textColor="@android:color/black"
                 android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/txtLatitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtDateTime"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_toRightOf="@+id/imgDependent"
+                android:text="Latitude:"
+                android:textColor="@android:color/black"
+                android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/txtLongitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtLatitude"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_toRightOf="@+id/imgDependent"
+                android:text="Longitude:"
+                android:textColor="@android:color/black"
+                android:textSize="10sp" />
         </RelativeLayout>
 
     </androidx.cardview.widget.CardView>

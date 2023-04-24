@@ -13,12 +13,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.wearabldeviceapp.adapters.SettingsAdapter;
+import com.example.wearabldeviceapp.common.Constants;
 import com.example.wearabldeviceapp.databinding.ActivitySettingsBinding;
 import com.example.wearabldeviceapp.databinding.DialogTermsConditionBinding;
 import com.example.wearabldeviceapp.interfaces.AdapterListener;
+import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
+import com.example.wearabldeviceapp.models.DangerZone;
+import com.example.wearabldeviceapp.models.Dependents;
+import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.LocalSetting;
+import com.example.wearabldeviceapp.models.SafeZone;
 import com.example.wearabldeviceapp.models.Users;
 import com.example.wearabldeviceapp.preference.UserPref;
+import com.example.wearabldeviceapp.services.HistoryWorkerManager;
+import com.example.wearabldeviceapp.services.LocalFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +38,8 @@ public class SettingsActivity extends AppCompatActivity {
     List<LocalSetting> settingsList;
     SettingsAdapter adapter;
     AlertDialog tcDialog;
+    HistoryWorkerManager historyWorkerManager;
+    LocalFirestore fs;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -45,12 +55,15 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void initializers() {
+        fs = new LocalFirestore(getApplicationContext());
+        historyWorkerManager = new HistoryWorkerManager(getApplicationContext());
         setTitle("Settings");
         settingsList = new ArrayList<>();
         LocalSetting setting = new LocalSetting();
         setting.setImageID(R.drawable.ic_terms);
         setting.setText("Terms and Conditions");
         settingsList.add(setting);
+
 
         setting = new LocalSetting();
         setting.setImageID(R.drawable.ic_out);
@@ -79,6 +92,9 @@ public class SettingsActivity extends AppCompatActivity {
                             switch (which) {
                                 case DialogInterface.BUTTON_NEGATIVE:
                                     new UserPref(SettingsActivity.this).storeUser(new Users());
+                                    if (Constants.scheduler != null)
+                                        Constants.scheduler.shutdown();
+                                    historyWorkerManager.stopHistoryWorker();
                                     startActivity(new Intent(SettingsActivity.this, MainActivity.class));
                                     finish();
                                     break;
@@ -93,6 +109,7 @@ public class SettingsActivity extends AppCompatActivity {
                                 .setCancelable(false)
                                 .show();
                         break;
+
                     default:
                         break;
                 }

@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.wearabldeviceapp.auth.LocalAuth;
+import com.example.wearabldeviceapp.common.Constants;
 import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
 import com.example.wearabldeviceapp.models.Users;
 import com.example.wearabldeviceapp.preference.UserPref;
@@ -58,11 +59,12 @@ public class MainActivity extends AppCompatActivity {
                 pD.show();
                 mAuth.login(users, new SimpleRequestListener() {
                     @Override
-                    public void onSuccessWithUserData(Users users) {
+                    public void onSuccessWithUserData(Users u) {
                         pD.dismiss();
                         Toast.makeText(MainActivity.this, "Login Successfully", Toast.LENGTH_SHORT).show();
-                        Log.e("USERS", new Gson().toJson(users));
-                        new UserPref(MainActivity.this).storeUser(users);
+                        Log.e("USERS", new Gson().toJson(u));
+                        Constants.userID = users.getUserID();
+                        new UserPref(MainActivity.this).storeUser(u);
                         startActivity(new Intent(MainActivity.this, ParentMainActivity.class));
                         finish();
                     }

@@ -24,8 +24,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.work.ListenableWorker;
 
 import com.example.wearabldeviceapp.adapters.SelectDeviceAdapter;
+import com.example.wearabldeviceapp.common.Constants;
 import com.example.wearabldeviceapp.databinding.ActivityTrackBinding;
 import com.example.wearabldeviceapp.databinding.DialogSelectDeviceBinding;
 import com.example.wearabldeviceapp.interfaces.SimpleRequestListener;
@@ -33,6 +35,7 @@ import com.example.wearabldeviceapp.models.D;
 import com.example.wearabldeviceapp.models.DangerZone;
 import com.example.wearabldeviceapp.models.Dependents;
 import com.example.wearabldeviceapp.models.Devices;
+import com.example.wearabldeviceapp.models.History;
 import com.example.wearabldeviceapp.models.LocalGPS;
 import com.example.wearabldeviceapp.models.SafeZone;
 import com.example.wearabldeviceapp.models.Users;
@@ -57,11 +60,15 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.Timestamp;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.maps.android.PolyUtil;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -102,6 +109,7 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
     DangerZone selectDangerZone;
     Polygon dangerZonePolygon;
     List<LatLng> dangerZoneLatLng = new ArrayList<>();
+    Boolean clearSafeZoneNotif, clearDangerZoneNotif;
 
 
     @Override
@@ -109,8 +117,11 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
         super.onCreate(savedInstanceState);
         binding = ActivityTrackBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        Constants.stopSchedule();
+        clearSafeZoneNotif = getIntent().getBooleanExtra("clearSafeZoneNotif", false);
+        clearDangerZoneNotif = getIntent().getBooleanExtra("clearDangerZoneNotif", false);
         fs = new LocalFirestore(TrackActivity.this);
-        req = new LocalRequest(TrackActivity.this);
+        req = new LocalRequest(getApplicationContext());
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -192,29 +203,32 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
     }
 
     private void runMyThread() {
-        Runnable helloRunnable = () -> req.getCoordinates(selectedDevice, new SimpleRequestListener() {
-            @Override
-            public void onSuccessWithStr(String uuid) {
-                uuid = uuid.replace("\"{", "{\"");
-                uuid = uuid.replace("}\"", "}");
-                uuid = uuid.replace(":[", "\":\"[");
-                uuid = uuid.replace("}]", "}]\"");
-                Log.e("RAW", uuid);
-                D coordinates = new Gson().fromJson(uuid, new TypeToken<D>() {
-                }.getType());
-                String data = coordinates.getD().getDevices();
-                data = data.replace("[{id", "[{\"id\"");
-                data = data.replace(":\"", "\":\"");
-                data = data.replace(",", ",\"");
-                data = data.replace("groupID:", "groupID\":");
-                data = data.replace("stopTimeMinute:", "stopTimeMinute\":");
-                data = data.replace("isStop:", "isStop\":");
-                List<Devices> devicesList = new Gson().fromJson(data, new TypeToken<List<Devices>>() {
-                }.getType());
-                if (devicesList.size() > 0) {
-                    deviceLocation = devicesList.get(0);
-                    Log.e("DATE >>>>", deviceLocation.getDeviceUtcDate());
-                    fetchLocation();
+        Runnable helloRunnable = () -> {
+            try {
+                req.getCoordinates(selectedDevice, new SimpleRequestListener() {
+                    @Override
+                    public void onSuccessWithStr(String uuid) {
+                        uuid = uuid.replace("\"{", "{\"");
+                        uuid = uuid.replace("}\"", "}");
+                        uuid = uuid.replace(":[", "\":\"[");
+                        uuid = uuid.replace("}]", "}]\"");
+                        Log.e("RAW", uuid);
+                        D coordinates = new Gson().fromJson(uuid, new TypeToken<D>() {
+                        }.getType());
+                        String data = coordinates.getD().getDevices();
+                        data = data.replace("[{id", "[{\"id\"");
+                        data = data.replace(":\"", "\":\"");
+                        data = data.replace(",", ",\"");
+                        data = data.replace("groupID:", "groupID\":");
+                        data = data.replace("stopTimeMinute:", "stopTimeMinute\":");
+                        data = data.replace("isStop:", "isStop\":");
+                        List<Devices> devicesList = new Gson().fromJson(data, new TypeToken<List<Devices>>() {
+                        }.getType());
+                        if (devicesList.size() > 0) {
+                            deviceLocation = devicesList.get(0);
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
+                            deviceLocation.setDeviceUtcDate(dateFormat.format(new Date()));
+                            fetchLocation();
 //                            if (currentLocation != null) {
 //                                LatLng sydney = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
 //                                markerYourLocation = mMap.addMarker(new MarkerOptions()
@@ -222,44 +236,92 @@ public class TrackActivity extends AppCompatActivity implements OnMapReadyCallba
 //                                        .title("Your Location"));
 //                                markerYourLocation.setTag(0);
 //                            }
-                    //show notif
-                    Boolean isAtSafeZone = false;
-                    Boolean isAtDangerZone = false;
-                    if (safeZoneLatLng.size() > 0) {
-                        isAtSafeZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
-                    }
+                            //show notif
 
-                    if (dangerZoneLatLng.size() > 0) {
-                        isAtDangerZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
-                    }
+                            Boolean isAtSafeZone = false;
+                            Boolean isAtDangerZone = false;
+                            if (safeZoneLatLng.size() > 0) {
+                                isAtSafeZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
+                            }
+
+                            if (dangerZoneLatLng.size() > 0) {
+                                isAtDangerZone = PolyUtil.containsLocation(new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng()), safeZoneLatLng, false);
+                            }
 
 
-                    if (isAtDangerZone && dangerZoneLatLng.size() > 0) {
-                        showDangerNotif();
-                    } else {
-                        if (!isAtSafeZone && safeZoneLatLng.size() > 0) {
-                            showNotif();
+                            if (isAtDangerZone && dangerZoneLatLng.size() > 0) {
+                                if (Constants.DANGER_NOTIFY_INCREMENT != 0) {
+                                    Constants.DANGER_NOTIFY_INCREMENT--;
+                                } else {
+                                    Constants.DANGER_NOTIFY_INCREMENT = 720;
+                                    showDangerNotif();
+                                }
+
+                            } else {
+                                if (!isAtSafeZone && safeZoneLatLng.size() > 0) {
+                                    if (Constants.SAFE_NOTIFY_INCREMENT != 0) {
+                                        Constants.SAFE_NOTIFY_INCREMENT--;
+                                    } else {
+                                        Constants.SAFE_NOTIFY_INCREMENT = 720;
+                                        Log.e("SAFE_ZONE_NOTIF", "TRIGGERED");
+                                        showNotif();
+                                    }
+                                }
+                            }
+
+                            if (Constants.HISTORY_INCREMENT != 0) {
+                                Constants.HISTORY_INCREMENT--;
+                                Log.e("HISTORY_STORING", String.format("INC: %s", Constants.HISTORY_INCREMENT));
+                            } else {
+                                Constants.HISTORY_INCREMENT = 10;
+                                Log.e("HISTORY_STORING", "TRIGGERED");
+                                History history = new History();
+                                history.setDependentName(selectedDependent.getName());
+                                history.setTimestamp(Timestamp.now());
+                                history.setLatitude(deviceLocation.getBaiduLat());
+                                history.setLongitude(deviceLocation.getBaiduLng());
+                                history.setUserID(selectedDependent.getUserID());
+
+                                fs.addHistoryLogger(history, new SimpleRequestListener() {
+                                    @Override
+                                    public void onSuccess() {
+                                    }
+
+                                    @Override
+                                    public void onError() {
+                                        Log.e("ERROR_ADD_HISTORY", "yes");
+                                    }
+                                });
+                            }
+
+
+                            LatLng dLocation = new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng());
+
+                            markerDeviceLocation = mMap.addMarker(new MarkerOptions()
+                                    .position(dLocation)
+                                    .title(String.format("%s Location", selectedDependent.getName())));
+                            markerDeviceLocation.setTag(0);
+//                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(dLocation, 15));
                         }
                     }
 
+                    @Override
+                    public void onError() {
+                        SimpleRequestListener.super.onError();
+                    }
+                });
+            } catch (NullPointerException e) {
 
-                    LatLng dLocation = new LatLng(deviceLocation.getBaiduLat(), deviceLocation.getBaiduLng());
-
-                    markerDeviceLocation = mMap.addMarker(new MarkerOptions()
-                            .position(dLocation)
-                            .title(String.format("%s Location", selectedDependent.getName())));
-                    markerDeviceLocation.setTag(0);
-//                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(dLocation, 15));
+            } catch (Exception e) {
+                if (e.getMessage() != null) {
+                    Log.e("CONTEXT_FAIL", e.getMessage());
                 }
             }
 
-            @Override
-            public void onError() {
-                SimpleRequestListener.super.onError();
-            }
-        });
+        };
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(helloRunnable, 0, 10, TimeUnit.SECONDS);
+        Constants.scheduler = executor;
     }
 
     private void showDangerNotif() {
